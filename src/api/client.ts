@@ -16,6 +16,22 @@ client.interceptors.request.use((config) => {
   return config
 })
 
+// Normalize _id → id recursively
+function normalizeIds(data: unknown): unknown {
+  if (Array.isArray(data)) return data.map(normalizeIds)
+  if (data !== null && typeof data === 'object') {
+    const obj = data as Record<string, unknown>
+    if ('_id' in obj && !('id' in obj)) obj.id = obj._id
+    for (const key of Object.keys(obj)) obj[key] = normalizeIds(obj[key])
+  }
+  return data
+}
+
+client.interceptors.response.use((res) => {
+  res.data = normalizeIds(res.data)
+  return res
+})
+
 // Auto-refresh on 401
 let isRefreshing = false
 let refreshQueue: Array<(token: string) => void> = []

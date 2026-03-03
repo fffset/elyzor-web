@@ -151,12 +151,13 @@ function ServiceRow({ service, projectId }: { service: Service; projectId: strin
             <CopyButton value={`svc_live_${service.publicPart}`} />
           </div>
         </div>
+        {!isRevoked && (
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-[--color-muted-foreground] hover:text-white"
-            disabled={isRevoked || rotateMutation.isPending}
+            disabled={rotateMutation.isPending}
             onClick={() => rotateMutation.mutate()}
             title="Rotate key"
           >
@@ -166,12 +167,12 @@ function ServiceRow({ service, projectId }: { service: Service; projectId: strin
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-[--color-muted-foreground] hover:text-red-400"
-            disabled={isRevoked}
             onClick={() => setShowDelete(true)}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
+        )}
       </div>
 
       <Dialog open={showDelete} onOpenChange={(o) => !o && setShowDelete(false)}>

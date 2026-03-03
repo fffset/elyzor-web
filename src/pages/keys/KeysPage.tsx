@@ -162,27 +162,28 @@ function KeyRow({ apiKey, projectId }: { apiKey: ApiKey; projectId: string }) {
             <CopyButton value={`sk_live_${apiKey.publicPart}`} />
           </div>
         </div>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-[--color-muted-foreground] hover:text-white"
-            disabled={apiKey.revoked || rotateMutation.isPending}
-            onClick={() => rotateMutation.mutate()}
-            title="Rotate key"
-          >
-            <RotateCcw className={`h-3.5 w-3.5 ${rotateMutation.isPending ? 'animate-spin' : ''}`} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-[--color-muted-foreground] hover:text-red-400"
-            disabled={apiKey.revoked}
-            onClick={() => setShowDelete(true)}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+        {!apiKey.revoked && (
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-[--color-muted-foreground] hover:text-white"
+              disabled={rotateMutation.isPending}
+              onClick={() => rotateMutation.mutate()}
+              title="Rotate key"
+            >
+              <RotateCcw className={`h-3.5 w-3.5 ${rotateMutation.isPending ? 'animate-spin' : ''}`} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-[--color-muted-foreground] hover:text-red-400"
+              onClick={() => setShowDelete(true)}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
       </div>
 
       <Dialog open={showDelete} onOpenChange={(o) => !o && setShowDelete(false)}>

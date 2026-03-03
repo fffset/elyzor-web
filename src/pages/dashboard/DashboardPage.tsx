@@ -73,6 +73,10 @@ export function DashboardPage() {
     )
   }
 
+  const requestsByDay = stats?.requestsByDay ?? []
+  const topApiKeys = stats?.topKeys.filter((k) => k.keyType === 'api') ?? []
+  const topServices = stats?.topKeys.filter((k) => k.keyType === 'service') ?? []
+
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
@@ -140,16 +144,15 @@ export function DashboardPage() {
       ) : null}
 
       {/* Daily activity */}
-      {stats && stats.daily.length > 0 && (
+      {requestsByDay.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Daily Activity</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {stats.daily.map((day) => {
-                const total = day.success + day.error
-                const successPct = total > 0 ? (day.success / total) * 100 : 0
+              {requestsByDay.map((day) => {
+                const successPct = day.count > 0 ? ((day.count - day.errors) / day.count) * 100 : 0
                 return (
                   <div key={day.date} className="flex items-center gap-3">
                     <span className="text-xs text-[--color-muted-foreground] w-20 shrink-0">
@@ -162,7 +165,7 @@ export function DashboardPage() {
                       />
                     </div>
                     <span className="text-xs text-[--color-muted-foreground] w-16 text-right">
-                      {total.toLocaleString()} req
+                      {day.count.toLocaleString()} req
                     </span>
                   </div>
                 )
@@ -173,37 +176,37 @@ export function DashboardPage() {
       )}
 
       {/* Top Keys + Services */}
-      {stats && (
+      {stats && (topApiKeys.length > 0 || topServices.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {stats.topKeys.length > 0 && (
+          {topApiKeys.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Top API Keys</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {stats.topKeys.map((k) => (
+                {topApiKeys.map((k) => (
                   <div key={k.keyId} className="flex items-center justify-between">
                     <span className="text-sm font-mono text-[--color-muted-foreground] truncate max-w-[200px]">
-                      {k.label}
+                      {k.keyId}
                     </span>
-                    <Badge variant="secondary">{k.count.toLocaleString()}</Badge>
+                    <Badge variant="secondary">{k.requests.toLocaleString()}</Badge>
                   </div>
                 ))}
               </CardContent>
             </Card>
           )}
-          {stats.topServices.length > 0 && (
+          {topServices.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Top Services</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {stats.topServices.map((s) => (
-                  <div key={s.serviceId} className="flex items-center justify-between">
+                {topServices.map((s) => (
+                  <div key={s.keyId} className="flex items-center justify-between">
                     <span className="text-sm text-[--color-muted-foreground] truncate max-w-[200px]">
-                      {s.name}
+                      {s.keyId}
                     </span>
-                    <Badge variant="secondary">{s.count.toLocaleString()}</Badge>
+                    <Badge variant="secondary">{s.requests.toLocaleString()}</Badge>
                   </div>
                 ))}
               </CardContent>

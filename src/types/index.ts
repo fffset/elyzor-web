@@ -40,22 +40,16 @@ export interface Service {
 }
 
 // Stats
-export interface DailyStats {
+export interface RequestsByDay {
   date: string
-  success: number
-  error: number
+  count: number
+  errors: number
 }
 
-export interface TopKey {
+export interface TopKeyEntry {
   keyId: string
-  label: string
-  count: number
-}
-
-export interface TopService {
-  serviceId: string
-  name: string
-  count: number
+  keyType: 'api' | 'service'
+  requests: number
 }
 
 export interface ProjectStats {
@@ -63,9 +57,8 @@ export interface ProjectStats {
   successRate: number
   rateLimitHits: number
   avgLatencyMs: number
-  daily: DailyStats[]
-  topKeys: TopKey[]
-  topServices: TopService[]
+  requestsByDay: RequestsByDay[]
+  topKeys: TopKeyEntry[]
 }
 
 // API Response
