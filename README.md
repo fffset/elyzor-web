@@ -1,73 +1,97 @@
-# React + TypeScript + Vite
+# elyzor-web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Web dashboard for [Elyzor](../elyzor) — manage API keys and service identities through a clean UI.
 
-Currently, two official plugins are available:
+> **Backend:** [elyzor](../elyzor) — Node.js + Express + MongoDB + Redis
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Requirements
 
-## React Compiler
+- Node.js 18+
+- Running [elyzor](../elyzor) backend (default: `localhost:3000`)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Setup
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+cp .env.example .env
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The default `.env` works out of the box if the backend runs on port 3000:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+VITE_API_URL=/v1
 ```
+
+## Development
+
+```bash
+# Start the backend first
+cd ../elyzor && docker compose up -d && npm run dev
+
+# Then start the frontend
+cd ../elyzor-web && npm run dev
+```
+
+Open `http://localhost:5174`.
+
+> No CORS issues — Vite proxies all `/v1/*` requests to `localhost:3000` automatically.
+
+## Build
+
+```bash
+npm run build    # TypeScript check + production build → dist/
+npm run preview  # Preview the production build locally
+```
+
+## Project Structure
+
+```
+src/
+├── api/                 # Axios client and endpoint functions
+│   ├── client.ts        # Axios instance, JWT interceptor, _id→id normalization
+│   ├── auth.ts          # register / login / logout / me
+│   ├── projects.ts      # projects CRUD
+│   └── keys.ts          # API keys, services, stats
+├── components/
+│   ├── layout/          # AppLayout, Sidebar, ProtectedRoute, ProjectDetailLayout
+│   └── ui/              # Button, Input, Label, Card, Badge, Dialog, Separator
+├── pages/
+│   ├── auth/            # LoginPage, RegisterPage
+│   ├── dashboard/       # DashboardPage (usage stats)
+│   ├── projects/        # ProjectsPage, ProjectDetailLayout
+│   └── keys/            # KeysPage (sk_live_), ServicesPage (svc_live_)
+├── store/
+│   └── auth.ts          # Zustand auth store (persisted to localStorage)
+└── types/
+    └── index.ts         # All TypeScript types
+```
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | React 19 + TypeScript |
+| Build | Vite 7 |
+| Styling | Tailwind CSS v4 + Radix UI |
+| Routing | React Router v7 |
+| Server state | TanStack Query v5 |
+| HTTP | Axios |
+| Global state | Zustand |
+
+## Screens
+
+| Route | Screen |
+|---|---|
+| `/login` | Sign in |
+| `/register` | Create account |
+| `/dashboard` | Usage statistics (1d / 7d / 30d) |
+| `/projects` | Project list |
+| `/projects/:id/keys` | API key management |
+| `/projects/:id/services` | Service key management |
+
+## Auth Flow
+
+- **Access token** (15 min) — stored in `localStorage`, injected into every request as `Authorization: Bearer`
+- **Refresh token** (7 days) — HTTP-only cookie set by the backend
+- On 401, Axios interceptor automatically refreshes the token and retries the failed request
+- If refresh fails, the user is redirected to `/login`
